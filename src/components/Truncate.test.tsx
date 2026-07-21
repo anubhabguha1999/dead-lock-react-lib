@@ -34,4 +34,38 @@ describe('Truncate', () => {
     fireEvent.click(el);
     expect(el).toHaveStyle({ whiteSpace: 'nowrap' });
   });
+
+  it('applies line clamp styles when lines prop is provided and > 1', () => {
+    render(<Truncate lines={3}>Hello multi line world</Truncate>);
+    const el = screen.getByText('Hello multi line world');
+    expect(el).toHaveStyle({
+      display: '-webkit-box',
+      webkitLineClamp: '3',
+      overflow: 'hidden',
+    });
+  });
+
+  it('removes line clamp styles when expanded', () => {
+    render(<Truncate lines={3}>Hello multi line world</Truncate>);
+    const el = screen.getByText('Hello multi line world');
+    
+    // Simulate truncation so click will expand
+    Object.defineProperty(el, 'scrollHeight', { value: 100, configurable: true });
+    Object.defineProperty(el, 'clientHeight', { value: 50, configurable: true });
+    
+    // Trigger hover to set isTruncated state
+    fireEvent.mouseEnter(el);
+    
+    // Expand the component by clicking it
+    fireEvent.click(el);
+    
+    // Retrieve the newly remounted element
+    const expandedEl = screen.getByText('Hello multi line world');
+    
+    expect(expandedEl).toHaveStyle({
+      display: 'inline-block',
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+    });
+  });
 });

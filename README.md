@@ -19,6 +19,16 @@ import { Truncate } from 'dead-lock-react-lib';
 <Truncate style={{ maxWidth: '20rem', color: 'crimson' }}>...</Truncate>
 ```
 
+### Multi-line Clamping (Line Clamp)
+
+You can clamp the text to a specific number of lines before truncating:
+
+```tsx
+<Truncate lines={3} width="300px">
+  A very long paragraph of text that will be clamped to exactly three lines before it truncates with an ellipsis.
+</Truncate>
+```
+
 ### Tailwind
 
 ```tsx
@@ -41,6 +51,7 @@ neither `className` nor `style` already define one.
 | `classname`          | `string`             | —       | Lowercase alias for `className` (typo-tolerant).                         |
 | `style`              | `CSSProperties`      | —       | Inline CSS, merged over the computed truncation styles.                  |
 | `width`              | `number \| string`   | —       | Truncation width. A number is treated as px.                             |
+| `lines`              | `number`             | —       | Number of lines to clamp to before truncating. If > 1, multi-line is used.|
 | `noMobileTransform`  | `boolean`            | `false` | Below 768px, skip truncation and render the full text.                   |
 | `whitespace`         | `boolean`            | `false` | When truncation is bypassed on mobile, force single-line instead of wrap.|
 | `disableClickExpand` | `boolean`            | `false` | Disable the click-to-expand/collapse interaction.                        |

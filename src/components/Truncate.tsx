@@ -20,6 +20,8 @@ export interface TruncateProps {
   disableClickExpand?: boolean;
   /** @deprecated Use `disableClickExpand` instead. Kept for backward compatibility. */
   'dont-work-onCLick'?: boolean;
+  /** Number of lines to clamp the text to before truncating. If specified and > 1, multi-line truncation is used. */
+  lines?: number;
 }
 
 function toCssSize(value: number | string | undefined): string | undefined {
@@ -34,6 +36,7 @@ export default function Truncate({
   classname,
   style,
   width,
+  lines,
   noMobileTransform = false,
   whitespace = false,
   disableClickExpand = false,
@@ -44,6 +47,7 @@ export default function Truncate({
   const [isTruncated, setIsTruncated] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const elementRef = useRef<HTMLSpanElement>(null);
+  const isMultiLine = lines !== undefined && lines > 1;
 
   // Measure if we are on a mobile viewport
   const [isMobile, setIsMobile] = useState(false);
@@ -63,8 +67,11 @@ export default function Truncate({
   const handleMouseEnter = () => {
     const el = elementRef.current;
     if (el) {
-      // If scrollWidth is larger than clientWidth, it means the text is overflowing/truncating
-      const isOverflowing = el.scrollWidth > el.clientWidth;
+      // If scrollWidth is larger than clientWidth (or scrollHeight is larger than clientHeight for multi-line clamp),
+      // it means the text is overflowing/truncating
+      const isOverflowing = isMultiLine
+        ? el.scrollHeight > el.clientHeight
+        : el.scrollWidth > el.clientWidth;
       setIsTruncated(isOverflowing);
     }
   };
@@ -109,13 +116,21 @@ export default function Truncate({
   const baseStyle: CSSProperties = expanded
     ? { display: 'inline-block', whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: cssWidth }
     : shouldTruncate
-      ? {
-          display: 'inline-block',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          maxWidth: cssWidth,
-        }
+      ? isMultiLine
+        ? {
+            display: '-webkit-box',
+            WebkitLineClamp: lines,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            maxWidth: cssWidth,
+          }
+        : {
+            display: 'inline-block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: cssWidth,
+          }
       : {
           display: 'block',
           overflow: 'visible',
