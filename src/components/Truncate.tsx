@@ -47,7 +47,7 @@ export default function Truncate({
   const [isTruncated, setIsTruncated] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const elementRef = useRef<HTMLSpanElement>(null);
-  const isMultiLine = lines !== undefined && lines > 1;
+  const isMultiLine = lines !== undefined && lines >= 1;
 
   // Measure if we are on a mobile viewport
   const [isMobile, setIsMobile] = useState(false);
@@ -64,12 +64,26 @@ export default function Truncate({
     return () => media.removeEventListener('change', updateMatch);
   }, [noMobileTransform]);
 
+  useEffect(() => {
+    const checkTruncation = () => {
+      const el = elementRef.current;
+      if (el) {
+        const isOverflowing = isMultiLine && lines && lines > 1
+          ? el.scrollHeight > el.clientHeight
+          : el.scrollWidth > el.clientWidth;
+        setIsTruncated(isOverflowing);
+      }
+    };
+
+    checkTruncation();
+    window.addEventListener('resize', checkTruncation);
+    return () => window.removeEventListener('resize', checkTruncation);
+  }, [children, width, lines, isMultiLine]);
+
   const handleMouseEnter = () => {
     const el = elementRef.current;
     if (el) {
-      // If scrollWidth is larger than clientWidth (or scrollHeight is larger than clientHeight for multi-line clamp),
-      // it means the text is overflowing/truncating
-      const isOverflowing = isMultiLine
+      const isOverflowing = isMultiLine && lines && lines > 1
         ? el.scrollHeight > el.clientHeight
         : el.scrollWidth > el.clientWidth;
       setIsTruncated(isOverflowing);
@@ -122,6 +136,7 @@ export default function Truncate({
             WebkitLineClamp: lines,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
+            whiteSpace: 'normal',
             wordBreak: 'break-all',
             maxWidth: cssWidth,
           }
@@ -140,7 +155,6 @@ export default function Truncate({
 
   if (clickable) baseStyle.cursor = 'pointer';
   if (dontWorkOnClick) {
-    baseStyle.pointerEvents = 'none';
     baseStyle.userSelect = 'none';
   }
 
@@ -150,7 +164,7 @@ export default function Truncate({
   // so the text displays naturally. On desktop we leave className/style width untouched.
   let finalClassName = combinedClassName;
   if (dontWorkOnClick) {
-    finalClassName = `${finalClassName} select-none pointer-events-none`.trim();
+    finalClassName = `${finalClassName} select-none`.trim();
   }
   if (shouldTruncate && !expanded && isMultiLine) {
     finalClassName = `${finalClassName} break-all`.trim();

@@ -32,10 +32,23 @@ describe('Truncate', () => {
     const { container } = render(<Truncate disableClickExpand>Hello world</Truncate>);
     const el = container.querySelector('span')!;
     fireEvent.click(el);
-    expect(el).toHaveStyle({ whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none' });
-    expect(el).toHaveClass('select-none', 'pointer-events-none');
+    expect(el).toHaveStyle({ whiteSpace: 'nowrap', userSelect: 'none' });
+    expect(el).toHaveClass('select-none');
+    expect(el).not.toHaveStyle({ pointerEvents: 'none' });
+    expect(el).not.toHaveClass('pointer-events-none');
   });
 
+  it('applies line clamp styles when lines prop is 1', () => {
+    render(<Truncate lines={1}>Hello single line clamp world</Truncate>);
+    const el = screen.getByText('Hello single line clamp world');
+    expect(el).toHaveStyle({
+      display: '-webkit-box',
+      webkitLineClamp: '1',
+      overflow: 'hidden',
+      whiteSpace: 'normal',
+      wordBreak: 'break-all',
+    });
+  });
 
   it('applies line clamp styles when lines prop is provided and > 1', () => {
     render(<Truncate lines={3}>Hello multi line world</Truncate>);
@@ -44,6 +57,7 @@ describe('Truncate', () => {
       display: '-webkit-box',
       webkitLineClamp: '3',
       overflow: 'hidden',
+      whiteSpace: 'normal',
       wordBreak: 'break-all',
     });
     expect(el).toHaveClass('break-all');
@@ -73,5 +87,42 @@ describe('Truncate', () => {
     });
     expect(expandedEl).not.toHaveClass('break-all');
   });
+
+  it('displays tooltip (title attribute) when truncated even if disableClickExpand is set', () => {
+    const { container } = render(
+      <Truncate disableClickExpand title="Full custom title">
+        Short text that overflows
+      </Truncate>
+    );
+    const el = container.querySelector('span')!;
+    
+    // Simulate truncation (horizontal overflow since lines is undefined)
+    Object.defineProperty(el, 'scrollWidth', { value: 200, configurable: true });
+    Object.defineProperty(el, 'clientWidth', { value: 100, configurable: true });
+    
+    // Trigger hover to evaluate truncation
+    fireEvent.mouseEnter(el);
+    
+    expect(el).toHaveAttribute('title', 'Full custom title');
+  });
+
+  it('displays default tooltip as child text when truncated and no title prop is provided', () => {
+    const { container } = render(
+      <Truncate disableClickExpand>
+        Truncated text default
+      </Truncate>
+    );
+    const el = container.querySelector('span')!;
+    
+    // Simulate truncation
+    Object.defineProperty(el, 'scrollWidth', { value: 200, configurable: true });
+    Object.defineProperty(el, 'clientWidth', { value: 100, configurable: true });
+    
+    // Trigger hover
+    fireEvent.mouseEnter(el);
+    
+    expect(el).toHaveAttribute('title', 'Truncated text default');
+  });
 });
+
 
