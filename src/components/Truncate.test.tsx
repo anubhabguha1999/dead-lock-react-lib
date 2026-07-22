@@ -32,8 +32,10 @@ describe('Truncate', () => {
     const { container } = render(<Truncate disableClickExpand>Hello world</Truncate>);
     const el = container.querySelector('span')!;
     fireEvent.click(el);
-    expect(el).toHaveStyle({ whiteSpace: 'nowrap' });
+    expect(el).toHaveStyle({ whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none' });
+    expect(el).toHaveClass('select-none', 'pointer-events-none');
   });
+
 
   it('applies line clamp styles when lines prop is provided and > 1', () => {
     render(<Truncate lines={3}>Hello multi line world</Truncate>);
@@ -42,7 +44,9 @@ describe('Truncate', () => {
       display: '-webkit-box',
       webkitLineClamp: '3',
       overflow: 'hidden',
+      wordBreak: 'break-all',
     });
+    expect(el).toHaveClass('break-all');
   });
 
   it('removes line clamp styles when expanded', () => {
@@ -67,5 +71,7 @@ describe('Truncate', () => {
       whiteSpace: 'normal',
       wordBreak: 'break-word',
     });
+    expect(expandedEl).not.toHaveClass('break-all');
   });
 });
+

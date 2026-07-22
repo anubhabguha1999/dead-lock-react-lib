@@ -1,6 +1,6 @@
 {
   "name": "dead-lock-react-lib",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A collection of React components. Includes Truncate, a text-truncation component that works with Tailwind, plain CSS, or inline styles, with click-to-expand and tooltip support.",
   "type": "module",
   "main": "./dist/index.cjs",

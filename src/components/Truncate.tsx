@@ -122,6 +122,7 @@ export default function Truncate({
             WebkitLineClamp: lines,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
+            wordBreak: 'break-all',
             maxWidth: cssWidth,
           }
         : {
@@ -138,14 +139,24 @@ export default function Truncate({
         };
 
   if (clickable) baseStyle.cursor = 'pointer';
+  if (dontWorkOnClick) {
+    baseStyle.pointerEvents = 'none';
+    baseStyle.userSelect = 'none';
+  }
 
   const finalStyle: CSSProperties = { ...baseStyle, ...style };
 
   // On mobile view with noMobileTransform, strip any width limit (ours or the caller's)
   // so the text displays naturally. On desktop we leave className/style width untouched.
   let finalClassName = combinedClassName;
+  if (dontWorkOnClick) {
+    finalClassName = `${finalClassName} select-none pointer-events-none`.trim();
+  }
+  if (shouldTruncate && !expanded && isMultiLine) {
+    finalClassName = `${finalClassName} break-all`.trim();
+  }
   if (!shouldTruncate) {
-    finalClassName = combinedClassName
+    finalClassName = finalClassName
       .split(/\s+/)
       .filter((c) => !c.includes('max-w') && !c.startsWith('w-') && c !== 'truncate')
       .join(' ');
